@@ -71,38 +71,45 @@ export class TwitterCloneStack extends Stack {
       addUserToDynamoFn
     );
 
-    // // Create an AppSync API
-    // const api = new appsync.GraphqlApi(this, "TwitterCloneApi", {
-    //   name: "TwitterCloneApi",
-    //   definition: appsync.Definition.fromFile("graphql/schema.graphql"),
-    //   authorizationConfig: {
-    //     defaultAuthorization: {
-    //       authorizationType: appsync.AuthorizationType.USER_POOL,
-    //     },
-    //   },
-    // });
+    // Define userPoolConfig
+    const userPoolConfig: appsync.UserPoolConfig = {
+      userPool: pool,
+      appIdClientRegex: client.userPoolClientId,
+    };
 
-    // // Create a Lambda data source
-    // const getUserFn = new NodejsFunction(this, "getUserFn", {
-    //   runtime: lambda.Runtime.NODEJS_16_X,
-    //   entry: "lambda/getUserFn.ts",
-    //   handler: "handler",
-    //   environment: {
-    //     TABLE_NAME: userTable.tableName,
-    //   },
-    // });
+    // Create an AppSync API
+    const api = new appsync.GraphqlApi(this, "TwitterCloneApi", {
+      name: "TwitterCloneApi",
+      definition: appsync.Definition.fromFile("graphql/schema.graphql"),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: userPoolConfig,
+        },
+      },
+    });
 
-    // // Add lambda data source
-    // const getMyUserDataSource = api.addLambdaDataSource(
-    //   "GetMyUserDataSource",
-    //   getUserFn
-    // );
+    // Create a Lambda data source
+    const getUserFn = new NodejsFunction(this, "getUserFn", {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      entry: "lambda/getUserFn.ts",
+      handler: "handler",
+      environment: {
+        TABLE_NAME: userTable.tableName,
+      },
+    });
 
-    // // Create a resolver for the getUser query
-    // getMyUserDataSource.createResolver("get-my-user-resolver", {
-    //   typeName: "Query",
-    //   fieldName: "getMyUser",
-    // });
+    // Add lambda data source
+    const getMyUserDataSource = api.addLambdaDataSource(
+      "getMyUserDataSource",
+      getUserFn
+    );
+
+    // Create a resolver for the getUser query
+    getMyUserDataSource.createResolver("getMyUserResolver", {
+      typeName: "Query",
+      fieldName: "getMyUser",
+    });
 
     // Save outputs
     new CfnOutput(this, "UserPoolId", { value: pool.userPoolId });

@@ -1,5 +1,5 @@
 type Query {
-  getUser: User
+  getMyUser: User
 }
 
 type User {
