@@ -10,6 +10,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 
 export class TwitterCloneStack extends Stack {
@@ -71,10 +72,15 @@ export class TwitterCloneStack extends Stack {
       addUserToDynamoFn
     );
 
-    // Define userPoolConfig
+    // Define configuration for AppSync to use Cognito
     const userPoolConfig: appsync.UserPoolConfig = {
       userPool: pool,
       appIdClientRegex: client.userPoolClientId,
+    };
+
+    // Logging for AppSync
+    const logConfig: appsync.LogConfig = {
+      retention: logs.RetentionDays.ONE_WEEK,
     };
 
     // Create an AppSync API
@@ -87,6 +93,7 @@ export class TwitterCloneStack extends Stack {
           userPoolConfig: userPoolConfig,
         },
       },
+      logConfig: logConfig,
     });
 
     // Create a Lambda data source
@@ -98,6 +105,9 @@ export class TwitterCloneStack extends Stack {
         TABLE_NAME: userTable.tableName,
       },
     });
+
+    // Give the Lambda function permissions to read from the User table
+    userTable.grantReadData(getUserFn);
 
     // Add lambda data source
     const getMyUserDataSource = api.addLambdaDataSource(

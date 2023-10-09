@@ -12,7 +12,7 @@ const dynamodb = new DynamoDB();
 let userPoolId: string;
 let userPoolClientId: string;
 let userTable: string;
-const testuser = "Testuser";
+const testuser = "testuser";
 
 describe("Twitter Clone Sign Up Flow", () => {
   beforeAll(async () => {
@@ -45,7 +45,7 @@ describe("Twitter Clone Sign Up Flow", () => {
     expect(result).toBeTruthy();
 
     // Clean up
-    cleanUp(userPoolId, testuser);
+    // cleanUp(userPoolId, testuser);
   });
 });
 
@@ -106,21 +106,21 @@ const pollDynamoUpdate = async (
   return result;
 };
 
-const cleanUp = async (UserPoolId: string, testuser: string): Promise<any> => {
-  // Delete the user
-  let deleteParams = {
-    UserPoolId: UserPoolId,
-    Username: testuser,
-  };
-  cognitoidentityserviceprovider.adminDeleteUser(deleteParams).promise();
+// const cleanUp = async (UserPoolId: string, testuser: string): Promise<any> => {
+//   // Delete the user
+//   let deleteParams = {
+//     UserPoolId: UserPoolId,
+//     Username: testuser,
+//   };
+//   cognitoidentityserviceprovider.adminDeleteUser(deleteParams).promise();
 
-  // Delete the user from the user table
-  // let deleteItemParams = {
-  //   TableName: userTable,
-  //   Key: { pk: { S: `USER#${UserSub}` }, sk: { S: `ROOT` } },
-  // };
-  // dynamodb.deleteItem(deleteItemParams).promise();
-};
+//   // Delete the user from the user table
+//   let deleteItemParams = {
+//     TableName: userTable,
+//     Key: { pk: { S: `USER#${UserSub}` }, sk: { S: `ROOT` } },
+//   };
+//   dynamodb.deleteItem(deleteItemParams).promise();
+// };
 
 const wait = async (interval: number) => {
   return new Promise((resolve) => setTimeout(resolve, interval));
